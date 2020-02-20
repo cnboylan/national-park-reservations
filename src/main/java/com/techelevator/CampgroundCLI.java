@@ -18,6 +18,10 @@ public class CampgroundCLI {
 
 	public CampgroundCLI(DataSource datasource) {
 		// create your DAOs here
+		ParkDAO = new ParkJBCD(datasource);
+		CampgroundDAO = new CampgroundJBCD(datasource);
+		CampsiteDAO = new CampsiteJBCD(datasource);
+		ReservationDAO = new ReservationJBCD(datasource);
 	}
 
 	public void run() {
