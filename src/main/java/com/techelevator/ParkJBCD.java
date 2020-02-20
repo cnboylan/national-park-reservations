@@ -29,9 +29,7 @@ public class ParkJBCD implements ParkDAO {
 
 	@Override
 	public Park findParkById(int parkId) {
-		int userchoice = parkId;
-
-		String query = "SELECT name FROM park where park_id = " + userchoice;
+		String query = "SELECT name FROM park where park_id = " + parkId;
 		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
 		Park p = mapRowToParks(results);
 		return p;

@@ -34,10 +34,7 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 
 	@Override
 	public Campground findCampgroundById(int campgroundId) {
-
-		int userChoice = campgroundId;
-
-		String query = "Select * FROM campground WHERE campground_id =" + userChoice;
+		String query = "Select * FROM campground WHERE campground_id =" + campgroundId;
 		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
 		Campground c = mapRowToCampground(results);
 		return c;
@@ -45,12 +42,9 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 
 	@Override
 	public List<Campground> findCampgroundsByParkId(int parkId) {
-
 		String userChoice = null;
-
 		List<Campground> campgrounds = new ArrayList<Campground>();
 		String query = "SELECT * FROM campground where park_id =" + userChoice +";";
-
 		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
 		//System.out.println("Please select a campground from the following list: "); Not sure if we'll use this til we get to
 		// the main menu.
