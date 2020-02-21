@@ -1,6 +1,10 @@
 package com.techelevator;
 
+import java.text.DateFormatSymbols;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +30,19 @@ public class CampsiteJBCD implements CampsiteDAO {
 			siteList.add(mapRowToSite(results));
 		}
 		return siteList;
+	}
+	
+	public void printCampsiteInfo(Campground cg, Date fromDate, Date toDate, String startDate, String endDate) {
+		List<Campsite> siteList = getAvailableSites(cg, fromDate, toDate);
+		LocalDate startDate = LocalDate.parse(fromDate.toString());
+		LocalDate endDate = LocalDate.parse(toDate.toString());
+		
+		int days = (int)ChronoUnit.DAYS.between(startDate, endDate);
+		
+		for (Campsite c : siteList) {
+			System.out.println(c.getSite_number() + " " + c.getMaxOccupancy() + " " + c.isHcAccessible() + " " 
+								+ c.getMax_rv_length() + " " + c.isUtilities() + " " + cg.getDaily_fee() * days);
+		}	
 	}
 
 	@Override
@@ -77,10 +94,10 @@ public class CampsiteJBCD implements CampsiteDAO {
 	}
 	
 	@SuppressWarnings("deprecation") //ok to use getMonth method??
-	public List<Campsite> getAvailableSites(int campgroundId, Date fromDate, Date toDate) {
+	public List<Campsite> getAvailableSites(Campground cg, Date fromDate, Date toDate) {
 		List<Campsite> siteList = new ArrayList<Campsite>();
 		String sqlGetOpenMonths = "SELECT open_from_mm, open_to_mm FROM campground WHERE campground_id = ?";
-		SqlRowSet months = jdbcTemplate.queryForRowSet(sqlGetOpenMonths, campgroundId);
+		SqlRowSet months = jdbcTemplate.queryForRowSet(sqlGetOpenMonths, cg.getCampground_id());
 		if(months.next()) {
 			int open = Integer.parseInt(months.getString("open_from_mm"));
 			int close = Integer.parseInt(months.getString("open_to_mm"));
@@ -91,11 +108,11 @@ public class CampsiteJBCD implements CampsiteDAO {
 		String sqlGetAvailSites = "SELECT * FROM site "
 								+ "JOIN reservation ON reservation.site_id = site.site_id "
 								+ "JOIN campground ON campground.campground_id = site.campground_id "
-								+ "WHERE campground_id = ? "
+								+ "WHERE campground.campground_id = ? "
 								+ "AND (from_date NOT BETWEEN ? AND ?) "
 								+ "AND (to_date NOT BETWEEN ? AND ?) "
 								+ "LIMIT 5";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, campgroundId, fromDate, toDate, fromDate, toDate);
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, cg.getCampground_id(), fromDate, toDate, fromDate, toDate);
 		while(results.next()) {
 			siteList.add(mapRowToSite(results));
 		}

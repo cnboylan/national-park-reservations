@@ -47,9 +47,12 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 
 	@Override
 	public Campground findCampgroundById(int campgroundId) {
-		String query = "Select * FROM campground WHERE campground_id =" + campgroundId;
-		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
-		Campground c = mapRowToCampground(results);
+		Campground c = null;
+		String query = "Select * FROM campground WHERE campground_id = ?";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(query, campgroundId);
+		if (results.next()) {
+			c = mapRowToCampground(results);
+		}
 		return c;
 	}
 
