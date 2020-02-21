@@ -54,5 +54,10 @@ public class CampgroundCLI {
 		// 					park to make a reservation.
 		// 					- Return up to 5 campsites for each campground along with daily cost or duration cost?
 		//         ---10. ULTRA BONUS - View list of all upcoming reservations within 30 days.
+			while (true) {
+				System.out.println("Insert generic welcome statement.");
+				System.out.println("Select a park from below");
+				
+			}
 	}
 }
