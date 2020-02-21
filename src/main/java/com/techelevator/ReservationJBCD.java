@@ -17,17 +17,15 @@ public class ReservationJBCD implements ReservationDAO {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-	@Override //gets reservations in the next 30 days
+	@Override
 	public List<Reservation> getAllReservations() {
-		List<Reservation> siteList = new ArrayList<Reservation>();
-		String sqlGetAllRez = "SELECT * FROM reservation "
-							+ "WHERE from_date "
-							+ "BETWEEN current_date AND current_date + 29";
+		List<Reservation> rezList = new ArrayList<Reservation>();
+		String sqlGetAllRez = "SELECT * FROM reservation";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAllRez);
 		while(results.next()) {
-			siteList.add(mapRowToRez(results));
+			rezList.add(mapRowToRez(results));
 		}
-		return siteList;
+		return rezList;
 	}
 
 	@Override
@@ -76,7 +74,21 @@ public class ReservationJBCD implements ReservationDAO {
 		String sqlDeleteRez = "DELETE FROM reservation "
 								+ "WHERE reservation_id = ?";
 		jdbcTemplate.update(sqlDeleteRez, deletedRez.getReservation_id());
-}
+	}
+	
+	public List<Reservation> getRezNext30Days(int parkId) {
+		List<Reservation> rezList = new ArrayList<Reservation>();
+		String sqlGetAllRez = "SELECT * FROM reservation "
+							+ "JOIN site ON site.site_id = reservation.site_id "
+							+ "JOIN campground ON campground.campground_id = site.campground_id "
+							+ "WHERE park_id = ? AND from_date "
+							+ "BETWEEN current_date AND current_date + 29";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAllRez);
+		while(results.next()) {
+			rezList.add(mapRowToRez(results));
+		}
+		return rezList;
+	}
 	
 //	private int getNextRezId() {
 //		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval('seq_reservation_id')");

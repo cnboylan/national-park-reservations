@@ -27,19 +27,6 @@ public class CampsiteJBCD implements CampsiteDAO {
 		}
 		return siteList;
 	}
-	
-	public List<Campsite> getAvailableSites(Date fromDate, Date toDate) {
-		List<Campsite> siteList = new ArrayList<Campsite>();
-		String sqlGetAvailSites = "SELECT * FROM site "
-								+ "JOIN reservation ON reservation.site_id = site.site_id "
-								+ "WHERE (from_date NOT BETWEEN ? AND ?) "
-								+ "AND (to_date NOT BETWEEN ? AND ?)";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, fromDate, toDate, fromDate, toDate);
-		while(results.next()) {
-			siteList.add(mapRowToSite(results));
-		}
-		return siteList;
-	}
 
 	@Override
 	public Campsite findSiteById(int siteId) {
@@ -81,12 +68,54 @@ public class CampsiteJBCD implements CampsiteDAO {
 				+ "SET campground_id = ?, site_number = ?, max_occupancy = ?, max_rv_length = ?, accessible = ?, utilities = ?)";
 		jdbcTemplate.update(sqlUpdateSite, updatedCampsite.getCampground_id(), updatedCampsite.getSite_number(), updatedCampsite.getMaxOccupancy(), 
 				updatedCampsite.getMax_rv_length(), updatedCampsite.isHcAccessible(), updatedCampsite.isUtilities());
-}
+	}
 
 	@Override //return value?
 	public void deleteCampsite(Campsite deletedCampsite) {
 		String sqlDeleteSite = "DELETE FROM site WHERE site_id = ?";
 		jdbcTemplate.update(sqlDeleteSite, deletedCampsite.getSite_id());
+	}
+	
+	@SuppressWarnings("deprecation") //ok to use getMonth method??
+	public List<Campsite> getAvailableSites(int campgroundId, Date fromDate, Date toDate) {
+		List<Campsite> siteList = new ArrayList<Campsite>();
+		String sqlGetOpenMonths = "SELECT open_from_mm, open_to_mm FROM campground WHERE campground_id = ?";
+		SqlRowSet months = jdbcTemplate.queryForRowSet(sqlGetOpenMonths, campgroundId);
+		if(months.next()) {
+			int open = Integer.parseInt(months.getString("open_from_mm"));
+			int close = Integer.parseInt(months.getString("open_to_mm"));
+			if (fromDate.getMonth() < open || toDate.getMonth() < open || fromDate.getMonth() > close || toDate.getMonth() > close) {
+				return siteList;
+			}
+		}
+		String sqlGetAvailSites = "SELECT * FROM site "
+								+ "JOIN reservation ON reservation.site_id = site.site_id "
+								+ "JOIN campground ON campground.campground_id = site.campground_id "
+								+ "WHERE campground_id = ? "
+								+ "AND (from_date NOT BETWEEN ? AND ?) "
+								+ "AND (to_date NOT BETWEEN ? AND ?) "
+								+ "LIMIT 5";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, campgroundId, fromDate, toDate, fromDate, toDate);
+		while(results.next()) {
+			siteList.add(mapRowToSite(results));
+		}
+		return siteList;
+	}
+	
+	public List<Campsite> getAvailSitesByPark(int parkId, Date fromDate, Date toDate) {
+		List<Campsite> siteList = new ArrayList<Campsite>();
+		String sqlGetAvailSitesByPark = "SELECT * FROM site "
+								+ "JOIN reservation ON reservation.site_id = site.site_id "
+								+ "JOIN campground ON campground.campground_id = site.campground_id "
+								+ "WHERE park_id = ? "
+								+ "AND (from_date NOT BETWEEN ? AND ?) "
+								+ "AND (to_date NOT BETWEEN ? AND ?) "
+								+ "LIMIT 5";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSitesByPark, parkId, fromDate, toDate, fromDate, toDate);
+		while(results.next()) {
+			siteList.add(mapRowToSite(results));
+		}
+		return siteList;
 	}
 	
 //	private long getNextSiteId() {
