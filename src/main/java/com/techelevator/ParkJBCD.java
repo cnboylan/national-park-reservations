@@ -49,4 +49,31 @@ public class ParkJBCD implements ParkDAO {
 
 		return park;
 	}
+
+	@Override
+	public Park findParkByCampgroundId(int campgroundId) {
+		String query =  "SELECT * FROM park JOIN campground ON campground.park_id = park.park_id where campground_id = " + campgroundId;
+		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
+		Park p = mapRowToParks(results);
+		return p;
+	}
+
+	@Override
+	public void createPark(Park newPark) {
+		// 
+		
+	}
+
+	@Override
+	public void updatePark(Park updatedPark) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deletePark(Park deletedPark) {
+		// TODO Auto-generated method stub
+	
+		
+	}
 }
