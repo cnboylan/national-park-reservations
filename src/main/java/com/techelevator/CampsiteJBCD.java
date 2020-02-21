@@ -66,6 +66,28 @@ public class CampsiteJBCD implements CampsiteDAO {
 		}
 		return siteList;
 	}
+
+	@Override //return value needed?
+	public void createCampsite(Campsite newCampsite) {
+		String sqlCreateSite = "INSERT INTO site(campground_id, site_number, max_occupancy, max_rv_length, accessible, utilities) "
+								+ "VALUES(?, ?, ?, ?, ?, ?)";
+		jdbcTemplate.update(sqlCreateSite, newCampsite.getCampground_id(), newCampsite.getSite_number(), newCampsite.getMaxOccupancy(), 
+								newCampsite.getMax_rv_length(), newCampsite.isHcAccessible(), newCampsite.isUtilities());
+	}
+
+	@Override //return value?
+	public void updateCampsite(Campsite updatedCampsite) {
+		String sqlUpdateSite = "UPDATE site "
+				+ "SET campground_id = ?, site_number = ?, max_occupancy = ?, max_rv_length = ?, accessible = ?, utilities = ?)";
+		jdbcTemplate.update(sqlUpdateSite, updatedCampsite.getCampground_id(), updatedCampsite.getSite_number(), updatedCampsite.getMaxOccupancy(), 
+				updatedCampsite.getMax_rv_length(), updatedCampsite.isHcAccessible(), updatedCampsite.isUtilities());
+}
+
+	@Override //return value?
+	public void deleteCampsite(Campsite deletedCampsite) {
+		String sqlDeleteSite = "DELETE FROM site WHERE site_id = ?";
+		jdbcTemplate.update(sqlDeleteSite, deletedCampsite.getSite_id());
+	}
 	
 //	private long getNextSiteId() {
 //		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval('seq_site_id')");

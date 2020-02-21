@@ -44,16 +44,44 @@ public class ReservationJBCD implements ReservationDAO {
 	}
 
 	@Override
-	public void createRez(int siteId, String rezName, Date fromDate, Date toDate) {
-		String sqlCreateRez = "INSERT INTO reservation(site_id, name, from_date, to_date)"
-								+ "VALUES(?, ?, ?, ?)";
-		jdbcTemplate.update(sqlCreateRez, siteId, rezName, fromDate, toDate);
+	public List<Reservation> findRezBySiteId(int siteId) {
+		List<Reservation> rezList = new ArrayList<Reservation>();
+		String sqlGetRezBySiteID = "SELECT * "+
+							   "FROM reservation "+
+							   "WHERE site_id = ?";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetRezBySiteID, siteId);
+		while(results.next()) {
+			rezList.add(mapRowToRez(results));
+		}
+		return rezList;
 	}
 	
-//	private long getNextRezId() {
+	@Override //Return value needed?
+	public void createRez(Reservation newRez) {
+		String sqlCreateRez = "INSERT INTO reservation(site_id, name, from_date, to_date)"
+								+ "VALUES(?, ?, ?, ?)";
+		jdbcTemplate.update(sqlCreateRez, newRez.getSite_id(), newRez.getName(), newRez.getFrom_date(), newRez.getTo_date());
+	}
+
+	@Override //Return value needed?
+	public void updateReservation(Reservation updatedRez) {
+		String sqlUpdateRez = "UPDATE reservation "
+							+ "SET site_id = ?, name = ?, from_date = ?, to_date = ? "
+							+ "WHERE reservation_id = ?";
+		jdbcTemplate.update(sqlUpdateRez, updatedRez.getSite_id(), updatedRez.getName(), updatedRez.getFrom_date(), updatedRez.getTo_date(), updatedRez.getReservation_id());
+	}
+
+	@Override //Return value needed?
+	public void deleteReservation(Reservation deletedRez) {
+		String sqlDeleteRez = "DELETE FROM reservation "
+								+ "WHERE reservation_id = ?";
+		jdbcTemplate.update(sqlDeleteRez, deletedRez.getReservation_id());
+}
+	
+//	private int getNextRezId() {
 //		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval('seq_reservation_id')");
 //		if(nextIdResult.next()) {
-//			return nextIdResult.getLong(1);
+//			return nextIdResult.getInt(1);
 //		} else {
 //			throw new RuntimeException("Something went wrong while getting an id for the new reservation");
 //		}
