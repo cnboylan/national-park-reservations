@@ -5,10 +5,10 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 public class CampgroundCLI {
-	Private ParkDAO = parkDAO;
-	Private CampgroundDAO = campgroundDAO;
-	Private CampsiteDAO = campsiteDAO;
-	Private ReservationDAO = reservationDAO;
+	private ParkDAO parkDAO;
+	private CampgroundDAO campgroundDAO;
+	private CampsiteDAO campsiteDAO;
+	private ReservationDAO reservationDAO;
 // TO-DO Build tests.
 // TO-DO Build CLI
 
