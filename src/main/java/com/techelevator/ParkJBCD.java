@@ -18,7 +18,7 @@ public class ParkJBCD implements ParkDAO {
 	@Override
 	public List<Park> getAllParks() {
 	List<Park> parks = new ArrayList<Park>();
-	String query = "Select name FROM park;";
+	String query = "Select * FROM park;";
 	SqlRowSet results = jdbcTemplate.queryForRowSet(query);
 	while (results.next()){
 		Park p = mapRowToParks(results);
@@ -26,12 +26,33 @@ public class ParkJBCD implements ParkDAO {
 	}
 	return parks;
 	}
+	public void printParkNames() {
+		List<Park> parks = getAllParks();
+		for (Park park : parks) {
+			System.out.print(park.getPark_id() + " - ");
+			System.out.println(park.getName());
+		}
+		
+	}
+	
+	public void printParkInfo(int userChoice) {
+		Park p = new Park();
+		p = findParkById(userChoice);
+		System.out.println(p.getName());
+		System.out.println("Location: " + p.getLocation());
+		System.out.println("Date Established: "  + p.getDate_est());
+		System.out.println("Area: "  + p.getArea());
+		System.out.println("Annual Visitors: " + p.getVisitors());
+		System.out.println(p.getDescription());
+	}
 
 	@Override
 	public Park findParkById(int parkId) {
-		String query = "SELECT name FROM park where park_id = " + parkId;
-		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
-		Park p = mapRowToParks(results);
+		Park p = null;
+		String query = "SELECT * FROM park where park_id = ?";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(query, parkId);
+		if (results.next())
+			p = mapRowToParks(results);
 		return p;
 	}
 
@@ -41,7 +62,7 @@ public class ParkJBCD implements ParkDAO {
 		park.setPark_id(results.getInt("park_id"));
 		park.setName(results.getString("name"));
 		park.setLocation(results.getString("location"));
-		//park.setEstablish_date(results.getDate("establish_date")); need to implement this as well
+		park.setDate_est(results.getDate("establish_date").toLocalDate()); 
 		park.setArea(results.getInt("area"));
 		park.setVisitors(results.getInt("visitors"));
 		park.setDescription(results.getString("description"));

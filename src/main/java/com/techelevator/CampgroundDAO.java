@@ -10,5 +10,5 @@ public interface CampgroundDAO {
 	public void createCampground(Campground newCampground);
 	public void updateCampground(Campground updatedCampground);
 	public void deleteCampground(Campground deletedCampground);
-	
+	public void printCampgroundInfo(int parkChoice);
 }

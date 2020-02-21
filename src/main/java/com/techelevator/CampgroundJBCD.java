@@ -1,5 +1,5 @@
 package com.techelevator;
-
+import java.text.DateFormatSymbols;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -31,6 +31,19 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 		}
 		return campgrounds;
 	}
+	
+	public void printCampgroundInfo(int parkChoice) {
+		List<Campground> cList = findCampgroundsByParkId(parkChoice);
+		
+		for (Campground c : cList) {
+			String monthOpen = new DateFormatSymbols().getMonths()[Integer.parseInt(c.getMonthOpen()) -1];
+			String monthClose = new DateFormatSymbols().getMonths()[Integer.parseInt(c.getMonthClose()) -1];
+			
+			
+			System.out.println(c.getCampground_id() + " " + c.getName() + " " + monthOpen + " " + monthClose + " " + c.getDaily_fee());
+		}
+		
+	}
 
 	@Override
 	public Campground findCampgroundById(int campgroundId) {
@@ -42,10 +55,9 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 
 	@Override
 	public List<Campground> findCampgroundsByParkId(int parkId) {
-		String userChoice = null;
 		List<Campground> campgrounds = new ArrayList<Campground>();
-		String query = "SELECT * FROM campground where park_id =" + userChoice +";";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
+		String query = "SELECT * FROM campground where park_id = ?;";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(query, parkId);
 		//System.out.println("Please select a campground from the following list: "); Not sure if we'll use this til we get to
 		// the main menu.
 		while (results.next()){
@@ -61,8 +73,8 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 		campground.setCampground_id(results.getInt("campground_id"));
 		campground.setName(results.getString("name"));
 		campground.setPark_id(results.getInt("park_id"));
-		//campground.setOpen_from_mm(results.getString("open_from_mm")); // we need to implement these methods
-		//campground.setOpen_to_mm(results.getString("open_to_mm")); // at some point
+		campground.setMonthOpen(results.getString("open_from_mm")); // we need to implement these methods
+		campground.setMonthClose(results.getString("open_to_mm")); // at some point
 		campground.setDaily_fee(results.getDouble("daily_fee"));
 
 		return campground;

@@ -1,5 +1,7 @@
 package com.techelevator;
 
+import java.util.Scanner;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -32,7 +34,7 @@ public class CampgroundCLI {
 	}
 
 	public void run() {
-
+		mainMenu();
 	}
 
 	public void mainMenu(){
@@ -55,8 +57,36 @@ public class CampgroundCLI {
 		// 					- Return up to 5 campsites for each campground along with daily cost or duration cost?
 		//         ---10. ULTRA BONUS - View list of all upcoming reservations within 30 days.
 			while (true) {
-				System.out.println("Insert generic welcome statement.");
-				System.out.println("Select a park from below");
+				Scanner scanner = new Scanner(System.in);
+				
+				System.out.println("View parks interface.");
+				System.out.println("Select a park for further details: ");
+				parkDAO.printParkNames();
+				System.out.println("0 - Quit");
+				int parkChoice = Integer.parseInt(scanner.nextLine());
+				
+				// add input validation sometime in the future maybe never.
+				
+				if (parkChoice == 0) {
+					break;
+				}
+				System.out.println("Park information screen.");
+				parkDAO.printParkInfo(parkChoice);
+				
+				System.out.println("Select one of the following options: ");
+				System.out.println("1 - View Campgrounds");
+				System.out.println("2 - Search for Reservation");
+				System.out.println("3 - Return to Previous Screen");
+				int userChoice = Integer.parseInt(scanner.nextLine());
+				
+				if (userChoice == 1) {
+					System.out.println("Name\tOpen\tClose\tDaily Fee");
+					campgroundDAO.printCampgroundInfo(userChoice);
+					
+				} else if (userChoice == 2) {
+					
+				}
+				
 				
 			}
 	}

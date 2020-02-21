@@ -10,4 +10,7 @@ public interface ParkDAO {
 	public void createPark(Park newPark);
 	public void updatePark(Park updatedPark);
 	public void deletePark(Park deletedPark);
+	public void printParkNames();
+	public void printParkInfo(int userChoice);
+	
 }
