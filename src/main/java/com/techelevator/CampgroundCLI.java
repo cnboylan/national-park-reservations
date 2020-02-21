@@ -45,8 +45,7 @@ public class CampgroundCLI {
 		// ********** INPUT VALIDATION **************
 		// *****Don't let Tom break your CLI again***
 
-		// ---5. Top 5 Campsites in no particular order ?
-		// ---6. Bonus - off season date returns 0 campsites
+
 		// ---7. Double Bonus - Advanced search to filter campsite amenities
 		// ---8. Book reservation at available campsite
 		// - Requires name for reservation, start date, end date
@@ -131,26 +130,30 @@ public class CampgroundCLI {
 			try {
 				start_date = sdf.parse(startDate);
 			} catch (ParseException e) {
-				System.out.println("Your start date input is just plain wrong.");
-				System.out.println("******************************************");
-				System.out.println("You are returning to the campground menu.");
-				// e.printStackTrace();
+				errorHandler(e);
+				mainMenu();
 			}
 			System.out.println("Enter an end date for your reservation. (Format: yyyy-mm-dd)");
 			endDate = scanner.nextLine();
 			try {
 				end_date = sdf.parse(endDate);
 			} catch (ParseException e) {
-				System.out.println("Your end date input is just plain wrong.");
-				System.out.println("****************************************");
-				System.out.println("You are returning to the campground menu.");
-
-				// e.printStackTrace();
+				errorHandler(e);
+				mainMenu();
 			}
 		
 
 		Campground cg = campgroundDAO.findCampgroundById(campgroundID);
 		campsiteDAO.printCampsiteInfo(cg, start_date, end_date, startDate, endDate);
+
+	}
+
+	public void errorHandler(Exception e){
+		System.out.println("*****************************************");
+		System.out.println("Your date input is incorrect.");
+		System.out.println("*****************************************");
+		System.out.println("You are returning to the main menu.");
+		System.out.println("*****************************************");
 
 	}
 

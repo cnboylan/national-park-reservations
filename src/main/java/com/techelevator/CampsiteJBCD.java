@@ -34,10 +34,10 @@ public class CampsiteJBCD implements CampsiteDAO {
 	
 	public void printCampsiteInfo(Campground cg, Date fromDate, Date toDate, String startDate, String endDate) {
 		List<Campsite> siteList = getAvailableSites(cg, fromDate, toDate);
-		LocalDate startDate = LocalDate.parse(fromDate.toString());
-		LocalDate endDate = LocalDate.parse(toDate.toString());
+		LocalDate startDateDate = LocalDate.parse(startDate);
+		LocalDate endDateDate = LocalDate.parse(endDate);
 		
-		int days = (int)ChronoUnit.DAYS.between(startDate, endDate);
+		int days = (int)ChronoUnit.DAYS.between(startDateDate, endDateDate);
 		
 		for (Campsite c : siteList) {
 			System.out.println(c.getSite_number() + " " + c.getMaxOccupancy() + " " + c.isHcAccessible() + " " 
@@ -101,24 +101,24 @@ public class CampsiteJBCD implements CampsiteDAO {
 		if(months.next()) {
 			int open = Integer.parseInt(months.getString("open_from_mm"));
 			int close = Integer.parseInt(months.getString("open_to_mm"));
-			if (fromDate.getMonth() < open || toDate.getMonth() < open || fromDate.getMonth() > close || toDate.getMonth() > close) {
+			if (fromDate.getMonth() <= open || toDate.getMonth() <= open || fromDate.getMonth() >= close || toDate.getMonth() >= close) {
 				return siteList;
 			}
 		}
-		String sqlGetAvailSites = "SELECT * FROM site "
+		String sqlGetAvailSites = "SELECT DISTINCT site.site_id, site.campground_id, site_number, max_occupancy, accessible, max_rv_length, utilities FROM site "
 								+ "JOIN reservation ON reservation.site_id = site.site_id "
 								+ "JOIN campground ON campground.campground_id = site.campground_id "
 								+ "WHERE campground.campground_id = ? "
 								+ "AND (from_date NOT BETWEEN ? AND ?) "
 								+ "AND (to_date NOT BETWEEN ? AND ?) "
-								+ "LIMIT 5";
+								+ "ORDER BY site_number LIMIT 5";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, cg.getCampground_id(), fromDate, toDate, fromDate, toDate);
 		while(results.next()) {
 			siteList.add(mapRowToSite(results));
 		}
 		return siteList;
 	}
-	
+
 	public List<Campsite> getAvailSitesByPark(int parkId, Date fromDate, Date toDate) {
 		List<Campsite> siteList = new ArrayList<Campsite>();
 		String sqlGetAvailSitesByPark = "SELECT * FROM site "
