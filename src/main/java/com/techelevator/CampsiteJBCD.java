@@ -13,13 +13,14 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-public class CampsiteJBCD implements CampsiteDAO {
+public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 	
 	private JdbcTemplate jdbcTemplate;
 
 	public CampsiteJBCD (DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
+	
 
 	@Override
 	public List<Campsite> getAllSites() {
@@ -150,14 +151,14 @@ public class CampsiteJBCD implements CampsiteDAO {
 		return siteList;
 	}
 	
-//	private long getNextSiteId() {
-//		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval('seq_site_id')");
-//		if(nextIdResult.next()) {
-//			return nextIdResult.getLong(1);
-//		} else {
-//			throw new RuntimeException("Something went wrong while getting an id for the new campsite");
-//		}
-//	}
+	protected int getNextSiteId() {
+		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval('site_site_id_seq')");
+		if(nextIdResult.next()) {
+			return nextIdResult.getInt(1);
+		} else {
+			throw new RuntimeException("Something went wrong while getting an id for the new campsite");
+		}
+	}
 	
 	private Campsite mapRowToSite(SqlRowSet results) {
 		Campsite newSite;
