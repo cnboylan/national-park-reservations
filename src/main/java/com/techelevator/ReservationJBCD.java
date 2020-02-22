@@ -1,5 +1,6 @@
 package com.techelevator;
 
+import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,15 @@ public class ReservationJBCD implements ReservationDAO {
 			rezList.add(mapRowToRez(results));
 		}
 		return rezList;
+	}
+	
+	public void printReservationInfo(int parkChoice) {
+		List<Reservation> rList = getRezNext30Days(parkChoice);
+		
+		for (Reservation rez : rList) {
+			System.out.println(rez.getReservation_id() + " | " + rez.getSite_id() + " | " + rez.getName() + " | " + rez.getFrom_date() + " | " + rez.getTo_date() + " | " + rez.getCreate_date());
+		}
+		
 	}
 
 	@Override
@@ -95,7 +105,7 @@ public class ReservationJBCD implements ReservationDAO {
 							+ "JOIN campground ON campground.campground_id = site.campground_id "
 							+ "WHERE park_id = ? AND from_date "
 							+ "BETWEEN current_date AND current_date + 29";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAllRez);
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAllRez, parkId);
 		while(results.next()) {
 			rezList.add(mapRowToRez(results));
 		}

@@ -8,6 +8,14 @@ public class Campsite {
 	boolean hcAccessible;
 	int max_rv_length;
 	boolean utilities;
+	double daily_fee;
+	
+	public double getDaily_fee() {
+		return daily_fee;
+	}
+	public void setDaily_fee(double daily_fee) {
+		this.daily_fee = daily_fee;
+	}
 	public int getSite_id() {
 		return site_id;
 	}
