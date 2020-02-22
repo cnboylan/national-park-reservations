@@ -44,18 +44,6 @@ public class CampgroundCLI {
 	public void mainMenu() {
 		// ********** INPUT VALIDATION **************
 		// *****Don't let Tom break your CLI again***
-
-
-		// ---7. Double Bonus - Advanced search to filter campsite amenities
-		// ---8. Book reservation at available campsite
-		// - Requires name for reservation, start date, end date
-		// - Returns confirmation ID once the reservation has been submitted
-		// ---9. Double Super Bonus - Select park and search campsite availability
-		// within
-		// park to make a reservation.
-		// - Return up to 5 campsites for each campground along with daily cost or
-		// duration cost?
-		// ---10. ULTRA BONUS - View list of all upcoming reservations within 30 days.
 		while (true) {
 			Scanner scanner = new Scanner(System.in);
 
@@ -68,11 +56,12 @@ public class CampgroundCLI {
 			// add input validation sometime in the future maybe never.
 
 			if (parkChoice == 0) {
-				break;
+				System.exit(1);
 			}
-
+			
 			parkInformationScreen(parkChoice);
 		}
+		
 	}
 
 	public void parkInformationScreen(int parkChoice) {
@@ -97,23 +86,32 @@ public class CampgroundCLI {
 	public void parkCampgroundMenya(int userChoice) {
 		Scanner scanner = new Scanner(System.in);
 
-		while (true) {
-			System.out.println("PARK CAMPGROUNDS");
-			System.out.println("Name\tOpen\tClose\tDaily Fee");
-			campgroundDAO.printCampgroundInfo(userChoice);
-			System.out.println("Select an option: ");
-			System.out.println("1 - Search for available reservation.");
-			System.out.println("2 - Return to previous screen.");
-			int resMenuChoice = Integer.parseInt(scanner.nextLine());
-			if (resMenuChoice == 1) {
-				while (true) {
-					System.out.println("Select a campground from the menu:");
-					campgroundDAO.printCampgroundInfo(userChoice);
-					int campgroundID = Integer.parseInt(scanner.nextLine());
-					searchForCampsitesMenya(campgroundID);
-				}
+		System.out.println("PARK CAMPGROUNDS");
+		System.out.println("Name\tOpen\tClose\tDaily Fee");
+		campgroundDAO.printCampgroundInfo(userChoice);
+		System.out.println("Select an option: ");
+		System.out.println("1 - Search for available reservation.");
+		System.out.println("2 - Return to previous screen.");
+		System.out.println("3 - Cancel");
+		int resMenuChoice = Integer.parseInt(scanner.nextLine());
+
+		if (resMenuChoice == 1) {
+			while (true) {
+				System.out.println("Select a campground from the menu:");
+				campgroundDAO.printCampgroundInfo(userChoice);
+				int campgroundID = Integer.parseInt(scanner.nextLine());
+				searchForCampsitesMenya(campgroundID);
 			}
 		}
+
+		if (resMenuChoice == 2) {
+			parkInformationScreen(userChoice);
+		}
+
+		if (resMenuChoice == 3) {
+			mainMenu();
+		}
+
 	}
 
 	public void searchForCampsitesMenya(int campgroundID) {
@@ -123,29 +121,49 @@ public class CampgroundCLI {
 		Date start_date = null;
 		Date end_date = null;
 		
-			System.out.println("Enter a start date for your reservation. (Format: yyyy-mm-dd)");
-			startDate = scanner.nextLine();
-			String pattern = "yyyy-MM-dd";
-			SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-			try {
-				start_date = sdf.parse(startDate);
-			} catch (ParseException e) {
-				errorHandler(e);
-				mainMenu();
-			}
-			System.out.println("Enter an end date for your reservation. (Format: yyyy-mm-dd)");
-			endDate = scanner.nextLine();
-			try {
-				end_date = sdf.parse(endDate);
-			} catch (ParseException e) {
-				errorHandler(e);
-				mainMenu();
-			}
+		System.out.println("Enter the start date for the reservation. (Format: yyyy-mm-dd)");
+		startDate = scanner.nextLine();
+		String pattern = "yyyy-MM-dd";
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 		
+		try {
+			start_date = sdf.parse(startDate);
+		} catch (ParseException e) {
+			errorHandler(e);
+			mainMenu();
+		}
+		
+		System.out.println("Enter the end date for the reservation. (Format: yyyy-mm-dd)");
+		endDate = scanner.nextLine();
+		
+		try {
+			end_date = sdf.parse(endDate);
+		} catch (ParseException e) {
+			errorHandler(e);
+			mainMenu();
+		}
 
 		Campground cg = campgroundDAO.findCampgroundById(campgroundID);
 		campsiteDAO.printCampsiteInfo(cg, start_date, end_date, startDate, endDate);
+		makeRez(start_date, end_date);
 
+	}
+	
+	public void makeRez(Date start_date, Date end_date) {
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("Which site should be reserved (0 to cancel)? ");
+		int siteChoice = Integer.parseInt(scanner.nextLine());
+		
+		if (siteChoice == 0) {
+			mainMenu();
+		}
+		
+		System.out.println("Enter name for the reservation: ");
+		String rezName = scanner.nextLine();
+		reservationDAO.createRez(siteChoice, rezName, start_date, end_date);
+		int rezID = reservationDAO.findRezByName(rezName).getReservation_id();
+		System.out.println("Reservation Confirmation #: " + rezID);
+		mainMenu();
 	}
 
 	public void errorHandler(Exception e){

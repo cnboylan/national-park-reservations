@@ -54,11 +54,23 @@ public class ReservationJBCD implements ReservationDAO {
 		return rezList;
 	}
 	
+	public Reservation findRezByName(String rezName) {
+		Reservation rez = new Reservation();
+		String sqlGetRezByName = "SELECT * "+
+							   "FROM reservation "+
+							   "WHERE name = ?";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetRezByName, rezName);
+		if(results.next()) {
+			rez = mapRowToRez(results);
+		}
+		return rez;
+	}
+	
 	@Override //Return value needed?
-	public void createRez(Reservation newRez) {
-		String sqlCreateRez = "INSERT INTO reservation(site_id, name, from_date, to_date)"
+	public void createRez(int siteID, String rezName, Date fromDate, Date toDate) {
+		String sqlCreateRez = "INSERT INTO reservation(site_id, name, from_date, to_date) "
 								+ "VALUES(?, ?, ?, ?)";
-		jdbcTemplate.update(sqlCreateRez, newRez.getSite_id(), newRez.getName(), newRez.getFrom_date(), newRez.getTo_date());
+		jdbcTemplate.update(sqlCreateRez, siteID, rezName, fromDate, toDate);
 	}
 
 	@Override //Return value needed?

@@ -39,9 +39,22 @@ public class CampsiteJBCD implements CampsiteDAO {
 		
 		int days = (int)ChronoUnit.DAYS.between(startDateDate, endDateDate);
 		
+		System.out.println("Site No. | Max Occupancy | Accessible | Max RV Length | Utilities? | Total Cost");
+		
 		for (Campsite c : siteList) {
-			System.out.println(c.getSite_number() + " " + c.getMaxOccupancy() + " " + c.isHcAccessible() + " " 
-								+ c.getMax_rv_length() + " " + c.isUtilities() + " " + cg.getDaily_fee() * days);
+			String yes = "YES";
+			String accessible = "NO";
+			String utilities = "NO";
+			
+			if (c.isHcAccessible()) {
+				accessible = yes;
+			}	
+			if (c.isUtilities()) {
+				utilities = yes;
+			}
+			
+			System.out.println(c.getSite_number() + " | " + c.getMaxOccupancy() + " | " + accessible + " | " 
+								+ c.getMax_rv_length() + " | " + utilities + " | " + cg.getDaily_fee() * days);
 		}	
 	}
 
@@ -112,9 +125,9 @@ public class CampsiteJBCD implements CampsiteDAO {
 								+ "OR (from_date NOT BETWEEN ? AND ?) "
 								+ "OR (to_date NOT BETWEEN ? AND ?) "
 								+ "OR ((from_date NOT BETWEEN ? AND ?) "
-								+ "AND (to_date NOT BETWEEN ? AND ?) "
+								+ "AND (to_date NOT BETWEEN ? AND ?)) "
 								+ "ORDER BY site_number LIMIT 5";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, cg.getCampground_id(), fromDate, toDate, fromDate, toDate);
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, cg.getCampground_id(), fromDate, toDate, fromDate, toDate, fromDate, toDate, fromDate, toDate);
 		while(results.next()) {
 			siteList.add(mapRowToSite(results));
 		}
