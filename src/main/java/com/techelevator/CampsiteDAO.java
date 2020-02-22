@@ -13,4 +13,5 @@ public interface CampsiteDAO {
 	public void deleteCampsite(Campsite deletedCampsite);
 	public List<Campsite> getAvailableSites(Campground cg, Date fromDate, Date toDate);
 	public void printCampsiteInfo(Campground cg, Date fromDate, Date toDate, String startDate, String endDate);
+	public void printCampsiteInfoByPark(int parkID, Date fromDate, Date toDate, String startDate, String endDate);
 }
