@@ -105,11 +105,13 @@ public class CampsiteJBCD implements CampsiteDAO {
 				return siteList;
 			}
 		}
-		String sqlGetAvailSites = "SELECT DISTINCT site.site_id, site.campground_id, site_number, max_occupancy, accessible, max_rv_length, utilities FROM site "
-								+ "JOIN reservation ON reservation.site_id = site.site_id "
-								+ "JOIN campground ON campground.campground_id = site.campground_id "
-								+ "WHERE campground.campground_id = ? "
-								+ "AND (from_date NOT BETWEEN ? AND ?) "
+		String sqlGetAvailSites = "SELECT DISTINCT site_number, site.site_id, site.campground_id, max_occupancy, accessible, max_rv_length, utilities FROM site "
+								+ "LEFT JOIN reservation ON reservation.site_id = site.site_id "
+								+ "WHERE site.campground_id = ? "
+								+ "AND site.site_id NOT IN(SELECT site_id FROM reservation) "
+								+ "OR (from_date NOT BETWEEN ? AND ?) "
+								+ "OR (to_date NOT BETWEEN ? AND ?) "
+								+ "OR ((from_date NOT BETWEEN ? AND ?) "
 								+ "AND (to_date NOT BETWEEN ? AND ?) "
 								+ "ORDER BY site_number LIMIT 5";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, cg.getCampground_id(), fromDate, toDate, fromDate, toDate);
