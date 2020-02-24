@@ -47,8 +47,8 @@ public class CampgroundCLI {
 		while (true) {
 			Scanner scanner = new Scanner(System.in);
 
-			System.out.println("VIEW PARKS INTERFACE");
-			System.out.println("Select a park for further details: ");
+			System.out.println("VIEW PARKS INTERFACE\n");
+			System.out.println("Select a park for further details:");
 			parkDAO.printParkNames();
 			System.out.println("0 - Quit");
 			int parkChoice = Integer.parseInt(scanner.nextLine());
@@ -59,37 +59,51 @@ public class CampgroundCLI {
 				System.exit(1);
 			}
 			
-			parkInformationScreen(parkChoice);
+			if (parkChoice == 1 || parkChoice == 2 || parkChoice == 3) {
+				parkInformationScreen(parkChoice);
+			}
+			
+			System.out.println("Invalid entry! Try again.\n");
 		}
 		
 	}
 
 	public void parkInformationScreen(int parkChoice) {
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("PARK INFORMATION SCREEN");
+		System.out.println("PARK INFORMATION SCREEN\n");
 		parkDAO.printParkInfo(parkChoice);
 
-		System.out.println("Select one of the following options: ");
+		System.out.println("\nSelect one of the following options: ");
 		System.out.println("1 - View Campgrounds");
-		System.out.println("2 - Search for Reservation");
-		System.out.println("3 - Return to Previous Screen");
+		System.out.println("2 - Search for Parkwide Reservation");
+		System.out.println("3 - Show Upcoming Reservations");
+		System.out.println("4 - Return to Previous Screen");
 		int userChoice = Integer.parseInt(scanner.nextLine());
 
 		if (userChoice == 1) {
-			parkCampgroundMenya(userChoice);
+			parkCampgroundMenya(parkChoice);
 
 		} else if (userChoice == 2) {
+			searchForCampsitesByParkMenya(parkChoice);
 
+		} else if (userChoice == 3) {
+			System.out.println("Rez No. | Site No. | Name | Start Date | End Date | Create Date");
+			reservationDAO.printReservationInfo(parkChoice);
+			System.out.println("************************************************************");
+			mainMenu();
+			
+		} else {
+			mainMenu();
 		}
 	}
 
 	public void parkCampgroundMenya(int userChoice) {
 		Scanner scanner = new Scanner(System.in);
 
-		System.out.println("PARK CAMPGROUNDS");
-		System.out.println("Name\tOpen\tClose\tDaily Fee");
+		System.out.println("PARK CAMPGROUNDS\n");
+		System.out.println("No. | Name | Open | Close | Daily Fee");
 		campgroundDAO.printCampgroundInfo(userChoice);
-		System.out.println("Select an option: ");
+		System.out.println("\nSelect an option: ");
 		System.out.println("1 - Search for available reservation.");
 		System.out.println("2 - Return to previous screen.");
 		System.out.println("3 - Cancel");
@@ -145,6 +159,40 @@ public class CampgroundCLI {
 
 		Campground cg = campgroundDAO.findCampgroundById(campgroundID);
 		campsiteDAO.printCampsiteInfo(cg, start_date, end_date, startDate, endDate);
+		makeRez(start_date, end_date);
+
+	}
+	
+	public void searchForCampsitesByParkMenya(int parkID) {
+		Scanner scanner = new Scanner(System.in);
+		String startDate;
+		String endDate;
+		Date start_date = null;
+		Date end_date = null;
+		
+		System.out.println("Enter the start date for the reservation. (Format: yyyy-mm-dd)");
+		startDate = scanner.nextLine();
+		String pattern = "yyyy-MM-dd";
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		
+		try {
+			start_date = sdf.parse(startDate);
+		} catch (ParseException e) {
+			errorHandler(e);
+			mainMenu();
+		}
+		
+		System.out.println("Enter the end date for the reservation. (Format: yyyy-mm-dd)");
+		endDate = scanner.nextLine();
+		
+		try {
+			end_date = sdf.parse(endDate);
+		} catch (ParseException e) {
+			errorHandler(e);
+			mainMenu();
+		}
+
+		campsiteDAO.printCampsiteInfoByPark(parkID, start_date, end_date, startDate, endDate);
 		makeRez(start_date, end_date);
 
 	}

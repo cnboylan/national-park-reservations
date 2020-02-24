@@ -1,5 +1,7 @@
 package com.techelevator;
 import java.text.DateFormatSymbols;
+import java.text.DecimalFormat;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -10,6 +12,7 @@ import java.util.List;
 public class CampgroundJBCD extends Campground implements CampgroundDAO {
 
 	private JdbcTemplate jdbcTemplate;
+	DecimalFormat df = new DecimalFormat("#.00");
 
 	public CampgroundJBCD (DataSource dataSource){
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -40,7 +43,7 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 			String monthClose = new DateFormatSymbols().getMonths()[Integer.parseInt(c.getMonthClose()) -1];
 			
 			
-			System.out.println(c.getCampground_id() + " " + c.getName() + " " + monthOpen + " " + monthClose + " " + c.getDaily_fee());
+			System.out.println(c.getCampground_id() + " | " + c.getName() + " | " + monthOpen + " | " + monthClose + " | $" + df.format(c.getDaily_fee()));
 		}
 		
 	}

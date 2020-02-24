@@ -12,4 +12,5 @@ public interface ReservationDAO {
 	public void updateReservation(Reservation updatedRez);
 	public void deleteReservation(Reservation deletedRez);
 	public Reservation findRezByName(String rezName);
+	public void printReservationInfo(int parkChoice);
 }

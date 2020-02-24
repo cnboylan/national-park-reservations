@@ -1,6 +1,7 @@
 package com.techelevator;
 
 import java.text.DateFormatSymbols;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 	
 	private JdbcTemplate jdbcTemplate;
+	DecimalFormat df = new DecimalFormat("#.00");
 
 	public CampsiteJBCD (DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -55,7 +57,33 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 			}
 			
 			System.out.println(c.getSite_number() + " | " + c.getMaxOccupancy() + " | " + accessible + " | " 
-								+ c.getMax_rv_length() + " | " + utilities + " | " + cg.getDaily_fee() * days);
+								+ c.getMax_rv_length() + " | " + utilities + " | " + df.format(cg.getDaily_fee() * days));
+		}	
+	}
+	
+	public void printCampsiteInfoByPark(int parkID, Date fromDate, Date toDate, String startDate, String endDate) {
+		List<Campsite> siteList = getAvailSitesByPark(parkID, fromDate, toDate);
+		LocalDate startDateDate = LocalDate.parse(startDate);
+		LocalDate endDateDate = LocalDate.parse(endDate);
+		
+		int days = (int)ChronoUnit.DAYS.between(startDateDate, endDateDate);
+		
+		System.out.println("Site No. | Max Occupancy | Accessible | Max RV Length | Utilities? | Total Cost");
+		
+		for (Campsite c : siteList) {
+			String yes = "YES";
+			String accessible = "NO";
+			String utilities = "NO";
+			
+			if (c.isHcAccessible()) {
+				accessible = yes;
+			}	
+			if (c.isUtilities()) {
+				utilities = yes;
+			}
+			
+			System.out.println(c.getSite_number() + " | " + c.getMaxOccupancy() + " | " + accessible + " | " 
+								+ c.getMax_rv_length() + " | " + utilities + " | " + df.format(c.getDaily_fee() * days));
 		}	
 	}
 
@@ -119,7 +147,7 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 				return siteList;
 			}
 		}
-		String sqlGetAvailSites = "SELECT DISTINCT site_number, site.site_id, site.campground_id, max_occupancy, accessible, max_rv_length, utilities FROM site "
+		String sqlGetAvailSites = "SELECT DISTINCT site_number, site.site_id, site.campground_id, max_occupancy, accessible, max_rv_length, utilities, daily_fee FROM site "
 								+ "LEFT JOIN reservation ON reservation.site_id = site.site_id "
 								+ "WHERE site.campground_id = ? "
 								+ "AND site.site_id NOT IN(SELECT site_id FROM reservation) "
@@ -137,17 +165,21 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 
 	public List<Campsite> getAvailSitesByPark(int parkId, Date fromDate, Date toDate) {
 		List<Campsite> siteList = new ArrayList<Campsite>();
-		String sqlGetAvailSitesByPark = "SELECT * FROM site "
-								+ "JOIN reservation ON reservation.site_id = site.site_id "
+		//need to validate the campground is open
+		String sqlGetAvailSitesByPark = "SELECT DISTINCT site_number, site.site_id, site.campground_id, max_occupancy, accessible, max_rv_length, utilities, daily_fee FROM site "
+								+ "LEFT JOIN reservation ON reservation.site_id = site.site_id "
 								+ "JOIN campground ON campground.campground_id = site.campground_id "
 								+ "WHERE park_id = ? "
-								+ "AND (from_date NOT BETWEEN ? AND ?) "
-								+ "AND (to_date NOT BETWEEN ? AND ?) "
-								+ "LIMIT 5";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSitesByPark, parkId, fromDate, toDate, fromDate, toDate);
+								+ "AND site.site_id NOT IN(SELECT site_id FROM reservation) "
+								+ "OR (from_date NOT BETWEEN ? AND ?) "
+								+ "OR (to_date NOT BETWEEN ? AND ?) "
+								+ "OR ((from_date NOT BETWEEN ? AND ?) "
+								+ "AND (to_date NOT BETWEEN ? AND ?)) "
+								+ "ORDER BY site_number LIMIT 5";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSitesByPark, parkId, fromDate, toDate, fromDate, toDate, fromDate, toDate, fromDate, toDate);
 		while(results.next()) {
 			siteList.add(mapRowToSite(results));
-		}
+		}		
 		return siteList;
 	}
 	
@@ -170,6 +202,7 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 		newSite.setHcAccessible(results.getBoolean("accessible"));
 		newSite.setMax_rv_length(results.getInt("max_rv_length"));
 		newSite.setUtilities(results.getBoolean("utilities"));
+		newSite.setDaily_fee(results.getDouble("daily_fee"));
 		return newSite;
 	}
 

@@ -31,18 +31,27 @@ public class ParkJBCD extends Park implements ParkDAO {
 		for (Park park : parks) {
 			System.out.print(park.getPark_id() + " - ");
 			System.out.println(park.getName());
+
 		}
+
+	}
 
 	}
 
 	public void printParkInfo(int userChoice) {
 		Park p = new Park();
 		p = findParkById(userChoice);
-		System.out.println(p.getName());
+		System.out.println(p.getName() + " National Park");
 		System.out.println("Location: " + p.getLocation());
+
 		System.out.println("Date Established: " + p.getDate_est());
 		System.out.println("Area: " + p.getArea());
 		System.out.println("Annual Visitors: " + p.getVisitors());
+
+		System.out.println("Date Established: " + p.getDate_est());
+		System.out.println("Area: " + p.getArea());
+		System.out.println("Annual Visitors: " + p.getVisitors() + "\n");
+
 		System.out.println(p.getDescription());
 	}
 
