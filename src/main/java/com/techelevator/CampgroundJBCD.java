@@ -24,7 +24,7 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 
 
 	@Override
-	public List<Campground> getAllCampgrounds() { // I don't think we need a get ALL campgrounds method but here it is anyway
+	public List<Campground> getAllCampgrounds() { 
 		List<Campground> campgrounds = new ArrayList<Campground>();
 		String query = "SELECT name FROM campground;";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(query);
@@ -104,6 +104,13 @@ public class CampgroundJBCD extends Campground implements CampgroundDAO {
 		// TODO Auto-generated method stub
 		
 	}
-
+	protected int getNextId() {
+	SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval('campground_campground_id_seq')");
+	if(nextIdResult.next()) {
+		return nextIdResult.getInt(1);
+	} else {
+		throw new RuntimeException("Something went wrong while getting an id for the new campsite");
+	}
+}
 
 }
