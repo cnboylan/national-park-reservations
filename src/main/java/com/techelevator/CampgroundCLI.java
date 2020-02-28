@@ -16,8 +16,6 @@ public class CampgroundCLI {
 	private CampgroundDAO campgroundDAO;
 	private CampsiteDAO campsiteDAO;
 	private ReservationDAO reservationDAO;
-// TO-DO Build tests.
-// TO-DO Build CLI
 
 	public static void main(String[] args) {
 		BasicDataSource dataSource = new BasicDataSource();
@@ -45,6 +43,7 @@ public class CampgroundCLI {
 		// ********** INPUT VALIDATION **************
 		// *****Don't let Tom break your CLI again***
 		while (true) {
+			//is it ok to open and close scanners in each method?
 			Scanner scanner = new Scanner(System.in);
 
 			System.out.println("VIEW PARKS INTERFACE\n");
@@ -58,7 +57,7 @@ public class CampgroundCLI {
 			if (parkChoice == 0) {
 				System.exit(1);
 			}
-			
+			//this shouldn't be hard coded, maybe make a list using park_id?
 			if (parkChoice == 1 || parkChoice == 2 || parkChoice == 3) {
 				parkInformationScreen(parkChoice);
 			}
@@ -104,8 +103,8 @@ public class CampgroundCLI {
 		System.out.println("No. | Name | Open | Close | Daily Fee");
 		campgroundDAO.printCampgroundInfo(userChoice);
 		System.out.println("\nSelect an option: ");
-		System.out.println("1 - Search for available reservation.");
-		System.out.println("2 - Return to previous screen.");
+		System.out.println("1 - Search for Available Reservation");
+		System.out.println("2 - Return to Previous Screen");
 		System.out.println("3 - Cancel");
 		int resMenuChoice = Integer.parseInt(scanner.nextLine());
 

@@ -36,8 +36,6 @@ public class ParkJBCD extends Park implements ParkDAO {
 
 	}
 
-	}
-
 	public void printParkInfo(int userChoice) {
 		Park p = new Park();
 		p = findParkById(userChoice);

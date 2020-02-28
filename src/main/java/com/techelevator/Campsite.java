@@ -9,7 +9,21 @@ public class Campsite {
 	int max_rv_length;
 	boolean utilities;
 	double daily_fee;
+	int open_from_mm;
+	int open_to_mm;
 	
+	public int getOpen_from_mm() {
+		return open_from_mm;
+	}
+	public void setOpen_from_mm(int open_from_mm) {
+		this.open_from_mm = open_from_mm;
+	}
+	public int getOpen_to_mm() {
+		return open_to_mm;
+	}
+	public void setOpen_to_mm(int open_to_mm) {
+		this.open_to_mm = open_to_mm;
+	}
 	public double getDaily_fee() {
 		return daily_fee;
 	}
