@@ -36,13 +36,14 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 	}
 	
 	public void printCampsiteInfo(Campground cg, Date fromDate, Date toDate, String startDate, String endDate) {
-		List<Campsite> siteList = getAvailableSites(cg, fromDate, toDate);
+		List<Campsite> siteList = getAvailableSites(cg.getCampground_id(), fromDate, toDate);
 		LocalDate startDateDate = LocalDate.parse(startDate);
 		LocalDate endDateDate = LocalDate.parse(endDate);
 		
 		int days = (int)ChronoUnit.DAYS.between(startDateDate, endDateDate);
 		
 		System.out.println("Site No. | Max Occupancy | Accessible | Max RV Length | Utilities? | Total Cost");
+		
 		
 		for (Campsite c : siteList) {
 			String yes = "YES";
@@ -68,7 +69,9 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 		
 		int days = (int)ChronoUnit.DAYS.between(startDateDate, endDateDate);
 		
-		System.out.println("Site No. | Max Occupancy | Accessible | Max RV Length | Utilities? | Total Cost");
+		System.out.println("Campground | Site No. | Max Occupancy | Accessible | Max RV Length | Utilities? | Total Cost");
+		
+		String cgName = null;
 		
 		for (Campsite c : siteList) {
 			String yes = "YES";
@@ -82,7 +85,13 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 				utilities = yes;
 			}
 			
-			System.out.println(c.getSite_number() + " | " + c.getMaxOccupancy() + " | " + accessible + " | " 
+			String sqlGetCgName = "SELECT name FROM campground WHERE campground_id = ?";
+			SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetCgName, c.getCampground_id());
+			if(results.next()) {
+				cgName = results.getString("name");
+			}
+			
+			System.out.println(cgName + " | " + c.getSite_number() + " | " + c.getMaxOccupancy() + " | " + accessible + " | " 
 								+ c.getMax_rv_length() + " | " + utilities + " | " + df.format(c.getDaily_fee() * days));
 		}	
 	}
@@ -113,7 +122,7 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 		return siteList;
 	}
 
-	@Override //return value needed?
+	@Override
 	public void createCampsite(Campsite newCampsite) {
 		String sqlCreateSite = "INSERT INTO site(campground_id, site_number, max_occupancy, max_rv_length, accessible, utilities) "
 								+ "VALUES(?, ?, ?, ?, ?, ?)";
@@ -121,7 +130,7 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 								newCampsite.getMax_rv_length(), newCampsite.isHcAccessible(), newCampsite.isUtilities());
 	}
 
-	@Override //return value?
+	@Override
 	public void updateCampsite(Campsite updatedCampsite) {
 		String sqlUpdateSite = "UPDATE site "
 				+ "SET campground_id = ?, site_number = ?, max_occupancy = ?, max_rv_length = ?, accessible = ?, utilities = ?)";
@@ -129,57 +138,53 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 				updatedCampsite.getMax_rv_length(), updatedCampsite.isHcAccessible(), updatedCampsite.isUtilities());
 	}
 
-	@Override //return value?
+	@Override
 	public void deleteCampsite(Campsite deletedCampsite) {
 		String sqlDeleteSite = "DELETE FROM site WHERE site_id = ?";
 		jdbcTemplate.update(sqlDeleteSite, deletedCampsite.getSite_id());
 	}
 	
-	@SuppressWarnings("deprecation") //ok to use getMonth method??
-	public List<Campsite> getAvailableSites(Campground cg, Date fromDate, Date toDate) {
+	@SuppressWarnings("deprecation")
+	public List<Campsite> getAvailableSites(int campground_ID, Date fromDate, Date toDate) {
 		List<Campsite> siteList = new ArrayList<Campsite>();
-		String sqlGetOpenMonths = "SELECT open_from_mm, open_to_mm FROM campground WHERE campground_id = ?";
-		SqlRowSet months = jdbcTemplate.queryForRowSet(sqlGetOpenMonths, cg.getCampground_id());
+		String sqlGetOpenMonths = "SELECT CAST(open_from_mm AS INT), CAST(open_to_mm AS INT) FROM campground WHERE campground_id = ?";
+		SqlRowSet months = jdbcTemplate.queryForRowSet(sqlGetOpenMonths, campground_ID);
 		if(months.next()) {
-			int open = Integer.parseInt(months.getString("open_from_mm"));
-			int close = Integer.parseInt(months.getString("open_to_mm"));
-			if (fromDate.getMonth() <= open || toDate.getMonth() <= open || fromDate.getMonth() >= close || toDate.getMonth() >= close) {
+			int open = months.getInt("open_from_mm");
+			int close = months.getInt("open_to_mm");
+			if (fromDate.getMonth() + 1 < open || toDate.getMonth() + 1 < open || fromDate.getMonth() + 1 > close || toDate.getMonth() + 1 > close) {
 				return siteList;
 			}
 		}
 		String sqlGetAvailSites = "SELECT DISTINCT site_number, site.site_id, site.campground_id, max_occupancy, accessible, max_rv_length, utilities, daily_fee FROM site "
 								+ "LEFT JOIN reservation ON reservation.site_id = site.site_id "
+								+ "JOIN campground ON campground.campground_id = site.campground_id "
 								+ "WHERE site.campground_id = ? "
-								+ "AND site.site_id NOT IN(SELECT site_id FROM reservation) "
-								+ "OR (from_date NOT BETWEEN ? AND ?) "
-								+ "OR (to_date NOT BETWEEN ? AND ?) "
-								+ "OR ((from_date NOT BETWEEN ? AND ?) "
-								+ "AND (to_date NOT BETWEEN ? AND ?)) "
+								+ "AND (site.site_id NOT IN (SELECT site_id FROM reservation) "
+								+ "OR site.site_id NOT IN (SELECT site.site_id FROM site "
+								+ "JOIN reservation ON reservation.site_id = site.site_id "
+								+ "WHERE to_date > ? AND from_date < ?)) "
 								+ "ORDER BY site_number LIMIT 5";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, cg.getCampground_id(), fromDate, toDate, fromDate, toDate, fromDate, toDate, fromDate, toDate);
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSites, campground_ID, fromDate, toDate);
 		while(results.next()) {
 			siteList.add(mapRowToSite(results));
 		}
 		return siteList;
 	}
 
+	@SuppressWarnings("deprecation")
 	public List<Campsite> getAvailSitesByPark(int parkId, Date fromDate, Date toDate) {
+		List<Integer> cgList = new ArrayList<Integer>();
 		List<Campsite> siteList = new ArrayList<Campsite>();
-		//need to validate the campground is open
-		String sqlGetAvailSitesByPark = "SELECT DISTINCT site_number, site.site_id, site.campground_id, max_occupancy, accessible, max_rv_length, utilities, daily_fee FROM site "
-								+ "LEFT JOIN reservation ON reservation.site_id = site.site_id "
-								+ "JOIN campground ON campground.campground_id = site.campground_id "
-								+ "WHERE park_id = ? "
-								+ "AND site.site_id NOT IN(SELECT site_id FROM reservation) "
-								+ "OR (from_date NOT BETWEEN ? AND ?) "
-								+ "OR (to_date NOT BETWEEN ? AND ?) "
-								+ "OR ((from_date NOT BETWEEN ? AND ?) "
-								+ "AND (to_date NOT BETWEEN ? AND ?)) "
-								+ "ORDER BY site_number LIMIT 5";
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetAvailSitesByPark, parkId, fromDate, toDate, fromDate, toDate, fromDate, toDate, fromDate, toDate);
-		while(results.next()) {
-			siteList.add(mapRowToSite(results));
-		}		
+		
+		String sqlGetCampgroundsByPark = "SELECT campground_id FROM campground WHERE park_id = ?";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlGetCampgroundsByPark, parkId);
+		cgList = mapCampgroundsToPark(results);
+		
+		for (Integer cg : cgList) {
+			siteList.addAll(getAvailableSites(cg, fromDate, toDate));
+		}
+		
 		return siteList;
 	}
 	
@@ -204,6 +209,14 @@ public class CampsiteJBCD extends Campsite implements CampsiteDAO  {
 		newSite.setUtilities(results.getBoolean("utilities"));
 		newSite.setDaily_fee(results.getDouble("daily_fee"));
 		return newSite;
+	}
+	
+	private List<Integer> mapCampgroundsToPark(SqlRowSet results) {
+		List<Integer> campgroundList = new ArrayList<Integer>();
+		while(results.next()) {
+			campgroundList.add(results.getInt("campground_id"));
+		}
+		return campgroundList;
 	}
 
 }
